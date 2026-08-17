@@ -1,6 +1,7 @@
 from pyrevit import forms
 import clr
 import os
+from uuid import UUID
 
 # Load EPPlus
 lib_path = os.path.abspath(
@@ -14,7 +15,14 @@ clr.AddReferenceToFileAndPath(
 from OfficeOpenXml import ExcelPackage
 from System.IO import FileInfo
 
-
+#guid checker
+def is_guid(value):
+    try:
+        UUID(str(value))
+        return True
+    except ValueError:
+        return False
+    
 # Pick file
 path = forms.pick_file(file_ext="xlsx", title="Select Excel File")
 
@@ -34,17 +42,19 @@ if path:
     print("Rows:", rows)
     print("Columns:", cols)
     
-    values = []
-    # Print all values
+    found_values = []
+    found_names = []
+
     for r in range(1, rows + 1):
-        
         for c in range(1, cols + 1):
-            values.append(sheet.Cells[r, c].Value)
+            cell_value = sheet.Cells[r, c].Value
+            guid_name = sheet.Cells[r,c+1].Value
+            if cell_value and is_guid(cell_value):
+                found_values.append(cell_value)
+                found_names.append(guid_name)
 
-        print(values)
-        print(sheet.Cells[r, 1].Style.HorizontalAlignment)
-        print(sheet.Cells[r, 1].Merge)
-
+    print(found_values, found_names)
+     
 
 
     package.Dispose()
