@@ -1,8 +1,7 @@
 import clr
 import os
 import re
-import testingScript
-import APISyntax
+import placeRoomExtremes
 
 clr.AddReference("System.Drawing")
 clr.AddReference("RevitAPI")
@@ -23,9 +22,5 @@ view = doc.ActiveView
 
 #---------------------------------------------------------
 # Run testing script
-cats = APISyntax.get_all_categories()
-for c in cats:
-    print(c)
 
-
-
+placeRoomExtremes.place_dimensions()

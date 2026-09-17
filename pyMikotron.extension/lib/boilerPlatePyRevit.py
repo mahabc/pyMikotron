@@ -4,15 +4,19 @@ import clr
 import os
 from System import Guid
 import System
-import excelPaintor
 
 
 # ---------------------------------------------------------
 # Load lib & EPPlus 
 # ---------------------------------------------------------
 
-lib_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "lib"))
+lib_path = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "..", "..", "lib")
+)
 
+clr.AddReferenceToFileAndPath(
+    os.path.join(lib_path, "EPPlus.dll")
+)
 
 from OfficeOpenXml import ExcelPackage
 from System.IO import FileInfo
@@ -30,8 +34,12 @@ view = revit.active_view #uidoc.ActiveView
 
 
 def main():
+    # -----------------------------------------------------
+    # Read Excel class def __init__(self, path)
+    # -----------------------------------------------------
+    excel_path  = forms.pick_file(file_ext="xlsx", title="Select Excel file")
 
-   excelPaintor.paint()
+    print("Success")
 
 
 if __name__ == "__main__":

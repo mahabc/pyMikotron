@@ -3,7 +3,7 @@ import os
 
 import clr
 clr.AddReference("RevitAPI")
-import disallowJoint
+import placeRoomDimensions
 
 from Autodesk.Revit.DB import *
 from Autodesk.Revit.DB.Structure import StructuralFramingUtils
@@ -17,7 +17,10 @@ lib_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "
 
 def main():
 
-    disallowJoint.disallow_joint_in_beams()
+    placeRoomDimensions.place_dimensions()
 
 if __name__ == "__main__":
     main()
+
+
+
