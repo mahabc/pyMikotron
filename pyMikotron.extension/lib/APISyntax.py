@@ -71,13 +71,27 @@ def get_type_name(element):
     return element.LookupParameter("Type Name").AsString()
     # Returns: str
     
-def get_family(element):
+def get_element_family(element):
     return element.Symbol.Family
     # Returns: Family (Autodesk.Revit.DB.Family)
 
-def get_family_name(element):
-    return element.Symbol.Family.Name
-    # Returns: str
+def get_element_family_name(element):
+    if not isinstance(element, FamilyInstance):
+        return None
+
+    try:
+        symbol = element.Symbol
+        if symbol is None:
+            return None
+
+        family = symbol.Family
+        if family is None:
+            return None
+
+        return Element.Name.GetValue(family)
+
+    except:
+        return None
 
 def get_parameter_from_type(element_type, name):
     return element_type.LookupParameter(name)
@@ -250,4 +264,97 @@ def place_model_line(curve, sketch_plane):
 
 def get_view_plane(view):
     return Plane.CreateByNormalAndOrigin(view.ViewDirection, view.Origin)
-    # Returns: Plane
+
+def get_sym_hosting(family_symbol):
+    hosting_behavior = {
+        0: None,
+        1: "Wall",
+        2: "Floor",
+        3: "Ceiling",
+        4: "Roof",
+        5: "Face"
+    }
+    return hosting_behavior.get(family_symbol.Family.get_Parameter(
+        BuiltInParameter.FAMILY_HOSTING_BEHAVIOR
+    ).AsInteger())
+    # Returns: int
+    # 0 = None
+    # 1 = Wall
+    # 2 = Floor
+    # 3 = Ceiling
+    # 4 = Roof
+    # 5 = Face
+
+def place_hosted_element(family_symbol, host, level, point):
+    if not family_symbol.IsActive:
+        family_symbol.Activate()
+    return doc.Create.NewFamilyInstance(
+        point,
+        family_symbol,
+        host,
+        level,
+        StructuralType.NonStructural
+    )
+    # host: Element (Wall / Floor / Ceiling)
+    # level: Level
+    # point: XYZ
+    # Returns: FamilyInstance
+
+def get_elements_by_param_value(param_name, param_value):
+    param_id = ElementId(BuiltInParameter(param_name))
+    return (FilteredElementCollector(doc)
+            .WherePasses(ParameterFilterRuleFactory.CreateEqualsRule(
+                param_id, param_value))
+            .WhereElementIsNotElementType()
+            .ToElements())
+    # Returns: ICollection[Element]
+
+def get_all_parameters():
+    pnames = []
+    params = []
+    parameter_elements = FilteredElementCollector(doc).OfClass(ParameterElement).ToElements()
+    shared_parameters = FilteredElementCollector(doc).OfClass(SharedParameterElement).ToElements()
+
+    for p in shared_parameters:
+        name = p.Name
+        pnames.append(name)
+        params.append(p)
+        
+    for p in parameter_elements:
+        name = p.Name
+        pnames.append(name)
+        params.append(p)
+        
+    #built_in_parameters = list(Enum.GetValues(BuiltInParameter.GetType()))
+    return pnames, params #+ built_in_parameters
+    # Returns: list[ParameterElement / SharedParameterElement / BuiltInParameter]
+
+def get_builtin_parameters():
+    enum_type = BuiltInParameter
+    names = Enum.GetNames(enum_type)
+
+    return [getattr(BuiltInParameter,name) for name in names]
+
+def get_param_id(element, param_name):
+    if isinstance(param_name, BuiltInParameter):
+        return ElementId(param_name)
+
+    param = element.LookupParameter(param_name)
+    return param.Id if param else None
+
+def by_id(element_id):
+    if isinstance(element_id, str):
+        return doc.GetElement(element_id)  # UniqueId
+    return doc.GetElement(ElementId(element_id))  # numeric ElementId
+
+def get_wall_curve_point(position = 0.5, wall = None):
+    if wall is not None:
+        return wall.Location.Curve.Evaluate(position, True)
+
+def select_in_view(uidoc, element_list):
+    uidoc.Selection.SetElementIds(List[ElementId]([elem.Id for elem in element_list]))
+    
+
+"""TransactionManager.Instance.EnsureInTransaction(doc)
+
+TransactionManager.Instance.TransactionTaskDone()"""
