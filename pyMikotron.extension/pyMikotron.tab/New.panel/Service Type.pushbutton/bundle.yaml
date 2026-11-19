@@ -1,0 +1,3 @@
+title: Service Type
+tooltip: Fill ELE_ServiceType from the first ticked ELE_Service / ELE_CC checkbox (whole model). Elements with several ticks are reported.
+author: Mikotron

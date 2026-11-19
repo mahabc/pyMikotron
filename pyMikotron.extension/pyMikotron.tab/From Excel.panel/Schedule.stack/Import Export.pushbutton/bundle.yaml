@@ -1,0 +1,3 @@
+title: Import Export
+tooltip: Export a schedule to formatted Excel (red = read-only, yellow = type parameter, green = instance parameter) and import the edited values back into the model.
+author: Mikotron
